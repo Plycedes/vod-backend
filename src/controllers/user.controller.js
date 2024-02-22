@@ -5,9 +5,9 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    message: "OK",
-  });
+  // res.status(200).json({
+  //   message: "OK",
+  // });
 
   const { fullName, email, username, password } = req.body;
   console.log("Name: ", fullName);
@@ -18,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No field can be empty");
   }
 
-  const existingUser = User.findOne({
+  const existingUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -53,13 +53,13 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  if (!createdUser) {
+  if (!userCreated) {
     throw new ApiError(500, "Something went wrong while creating the user");
   }
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registed successfully"));
+    .json(new ApiResponse(200, userCreated, "User registed successfully"));
 });
 
 export { registerUser };
