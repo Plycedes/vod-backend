@@ -45,7 +45,7 @@ router.route("/watch-history").get(verifyJWT, getWatchHistory);
 //patch-routes
 router.route("/update-details").patch(verifyJWT, updateAccountDetails);
 router
-  .route("update-avatar")
+  .route("/update-avatar")
   .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
 router
   .route("/update-cover-img")

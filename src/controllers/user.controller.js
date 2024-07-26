@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const genreateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -70,7 +71,9 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     fullName,
     avatar: avatar.url,
+    avatarId: avatar.public_id,
     coverImage: coverImage?.url || "",
+    coverImageId: coverImage?.public_id || "",
     email,
     password,
     username: username.toLowerCase(),
@@ -272,11 +275,17 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading avatar");
   }
 
+  const oldUser = await User.findById(req.user?._id).select("avatarId");
+  await cloudinary.uploader.destroy(oldUser.avatarId, function (error, result) {
+    console.log(result, error);
+  });
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
         avatar: avatar.url,
+        avatarId: avatar.public_id,
       },
     },
     { new: true }
@@ -288,7 +297,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.file?.path;
+  const coverImageLocalPath = req.file?.path;
 
   if (!coverImageLocalPath) {
     throw new ApiError(400, "Cover Image file is missing");
@@ -300,11 +309,20 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading cover image");
   }
 
-  await User.findByIdAndUpdate(
+  const oldUser = await User.findById(req.user?._id).select("coverImageId");
+  await cloudinary.uploader.destroy(
+    oldUser.coverImageId,
+    function (error, result) {
+      console.log(result, error);
+    }
+  );
+
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      set: {
+      $set: {
         coverImage: coverImage.url,
+        coverImageId: coverImage.public_id,
       },
     },
     { new: true }
