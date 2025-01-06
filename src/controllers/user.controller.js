@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { v2 as cloudinary } from "cloudinary";
+import jwt from "jsonwebtoken";
 
 const genreateAccessAndRefreshTokens = async (userId) => {
   try {
